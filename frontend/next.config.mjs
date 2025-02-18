@@ -3,6 +3,7 @@
  * for Docker builds.
  */
 await import('./src/env.mjs');
+// @ts-ignore
 import withBundleAnalyzer from '@next/bundle-analyzer';
 
 // Only run bundle analyzer when ANALYZE is set to true

@@ -3,79 +3,140 @@ version: '3.8'
 services:
   fastapi_server:
     container_name: fastapi_server
-    build: ./backend
+    build:
+      context: ./backend
+      args:
+        INSTALL_DEV: "false"
     restart: always
-    command: "sh -c 'alembic upgrade head && python app/document_ingestion.py  && uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 9090'"
+    environment:
+      - PYTHONPATH=/code/app
+    command: >
+      sh -c "alembic -c /code/app/alembic.ini upgrade head &&
+             python /code/app/app/document_ingestion.py &&
+             uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 9090"
+
     volumes:
-      - ./backend/app:/code
+      - ./backend/app:/code/app
     expose:
-      - 9090
-    env_file: ".env"
+      - "9090"
+    env_file: .env
     depends_on:
       - database
 
   nextjs_server:
     container_name: nextjs_server
-    build: ./frontend
+    build:
+      context: ./frontend
+      # dockerfile: Dockerfile
     restart: always
     command: "sh -c 'node server.js'"
     volumes:
-      - ./frontend:/code
+      - ./frontend:/app
     ports:
-      - 3000:3000
+      - "3000:3000"
     expose:
-      - 3000
-    env_file: "frontend/.env"
+      - "3000"
+    env_file: frontend/.env
     depends_on:
       - fastapi_server
+
+  database:
+    image: ankane/pgvector:v0.4.1
+    container_name: database
+    restart: always
+    env_file: .env
+    user: root
+    volumes:
+      - ./db_docker:/var/lib/postgresql
+      - ./scripts/1-create-dbs.sql:/docker-entrypoint-initdb.d/1-create-dbs.sql
+      - ./scripts/sql_db_tool/2-chinook_psql_load.sql:/docker-entrypoint-initdb.d/2-chinook_psql_load.sql
+    ports:
+      - "5432:5432"
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_USERNAME: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DATABASE: ${DATABASE_NAME}
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 15s
+      retries: 5
 
   redis_server:
     image: redis:alpine
     container_name: redis_server
     restart: always
     ports:
-      - 6379:6379 # Remove this on production
+      - "6379:6379"  # À retirer en production si nécessaire
     expose:
-      - 6379
-    env_file: ".env"
-
-  database:
-    image: ankane/pgvector:v0.4.1
-    restart: always
-    container_name: database
-    env_file: ".env"
-    user: root
-    volumes:
-      - ./db_docker:/var/lib/postgresql
-      - ./scripts/1-create-dbs.sql:/docker-entrypoint-initdb.d/1-create-dbs.sql
-    ports:
-      - 5432:5432
-    expose:
-      - 5432
-    environment:
-      - POSTGRES_USERNAME=${DATABASE_USER}
-      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
-      - POSTGRES_DATABASE=${DATABASE_NAME}
-      - POSTGRES_HOST_AUTH_METHOD= "trust"
+      - "6379"
+    env_file: .env
 
   caddy_reverse_proxy:
     container_name: caddy_reverse_proxy
     image: caddy:alpine
     restart: always
     ports:
-      - 80:80
-      - 9090:9090
-      - 443:443
+      - "80:80"
+      - "9090:9090"
+      - "3001:3001"
+      - "443:443"
     environment:
-      - EXT_ENDPOINT1=${EXT_ENDPOINT1}
-      - LOCAL_1=${LOCAL_1}
-      - LOCAL_2=${LOCAL_2}
+      EXT_ENDPOINT1: ${EXT_ENDPOINT1}
+      LOCAL_1: ${LOCAL_1}
+      LOCAL_2: ${LOCAL_2}
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
 
+  pre-commit:
+    build:
+      context: ./pre-commit
+    profiles:
+      - "pre-commit"
+    entrypoint: "pre-commit run"
+    volumes:
+      - ./backend:/code/backend
+      - ./frontend:/code/frontend
+      - ./.git:/code/.git
+    working_dir: /code
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    restart: always
+    ports:
+      - "9092:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    depends_on:
+      - fastapi_server
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    restart: always
+    ports:
+      - "3002:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    depends_on:
+      - prometheus
 
 volumes:
   caddy_data:
   caddy_config:
+  langchain-db-data:
+  langchain-redis-data:
+  prometheus_data:
+  grafana_data:
