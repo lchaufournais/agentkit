@@ -2,13 +2,13 @@
     "tables": [
         {
             "schema_name": "public",
-            "table_name": "media_type",
-            "structure": "\nCREATE TABLE public.media_type (\n\tmedia_type_id SERIAL NOT NULL, \n\tname VARCHAR(120), \n\tCONSTRAINT pk_media_type PRIMARY KEY (media_type_id)\n)\n\n/*\n3 rows from media_type table:\nmedia_type_id\tname\n1\tMPEG audio file\n2\tProtected AAC audio file\n3\tProtected MPEG-4 video file\n*/"
+            "table_name": "invoice",
+            "structure": "\nCREATE TABLE public.invoice (\n\tinvoice_id SERIAL NOT NULL, \n\tcustomer_id INTEGER NOT NULL, \n\tinvoice_date TIMESTAMP WITHOUT TIME ZONE NOT NULL, \n\tbilling_address VARCHAR(70), \n\tbilling_city VARCHAR(40), \n\tbilling_state VARCHAR(40), \n\tbilling_country VARCHAR(40), \n\tbilling_postal_code VARCHAR(10), \n\ttotal NUMERIC(10, 2) NOT NULL, \n\tCONSTRAINT pk_invoice PRIMARY KEY (invoice_id), \n\tCONSTRAINT fk_invoice_customer_id FOREIGN KEY(customer_id) REFERENCES public.customer (customer_id)\n)\n\n/*\n3 rows from invoice table:\ninvoice_id\tcustomer_id\tinvoice_date\tbilling_address\tbilling_city\tbilling_state\tbilling_country\tbilling_postal_code\ttotal\n1\t2\t2009-01-01 00:00:00\tTheodor-Heuss-Straße 34\tStuttgart\tNone\tGermany\t70174\t1.98\n2\t4\t2009-01-02 00:00:00\tUllevålsveien 14\tOslo\tNone\tNorway\t0171\t3.96\n3\t8\t2009-01-03 00:00:00\tGrétrystraat 63\tBrussels\tNone\tBelgium\t1000\t5.94\n*/"
         },
         {
             "schema_name": "public",
-            "table_name": "invoice",
-            "structure": "\nCREATE TABLE public.invoice (\n\tinvoice_id SERIAL NOT NULL, \n\tcustomer_id INTEGER NOT NULL, \n\tinvoice_date TIMESTAMP WITHOUT TIME ZONE NOT NULL, \n\tbilling_address VARCHAR(70), \n\tbilling_city VARCHAR(40), \n\tbilling_state VARCHAR(40), \n\tbilling_country VARCHAR(40), \n\tbilling_postal_code VARCHAR(10), \n\ttotal NUMERIC(10, 2) NOT NULL, \n\tCONSTRAINT pk_invoice PRIMARY KEY (invoice_id), \n\tCONSTRAINT fk_invoice_customer_id FOREIGN KEY(customer_id) REFERENCES public.customer (customer_id)\n)\n\n/*\n3 rows from invoice table:\ninvoice_id\tcustomer_id\tinvoice_date\tbilling_address\tbilling_city\tbilling_state\tbilling_country\tbilling_postal_code\ttotal\n1\t2\t2009-01-01 00:00:00\tTheodor-Heuss-Straße 34\tStuttgart\tNone\tGermany\t70174\t1.98\n2\t4\t2009-01-02 00:00:00\tUllevålsveien 14\tOslo\tNone\tNorway\t0171\t3.96\n3\t8\t2009-01-03 00:00:00\tGrétrystraat 63\tBrussels\tNone\tBelgium\t1000\t5.94\n*/"
+            "table_name": "track",
+            "structure": "\nCREATE TABLE public.track (\n\ttrack_id SERIAL NOT NULL, \n\tname VARCHAR(200) NOT NULL, \n\talbum_id INTEGER, \n\tmedia_type_id INTEGER NOT NULL, \n\tgenre_id INTEGER, \n\tcomposer VARCHAR(220), \n\tmilliseconds INTEGER NOT NULL, \n\tbytes INTEGER, \n\tunit_price NUMERIC(10, 2) NOT NULL, \n\tCONSTRAINT pk_track PRIMARY KEY (track_id), \n\tCONSTRAINT fk_track_album_id FOREIGN KEY(album_id) REFERENCES public.album (album_id), \n\tCONSTRAINT fk_track_genre_id FOREIGN KEY(genre_id) REFERENCES public.genre (genre_id), \n\tCONSTRAINT fk_track_media_type_id FOREIGN KEY(media_type_id) REFERENCES public.media_type (media_type_id)\n)\n\n/*\n3 rows from track table:\ntrack_id\tname\talbum_id\tmedia_type_id\tgenre_id\tcomposer\tmilliseconds\tbytes\tunit_price\n1\tFor Those About To Rock (We Salute You)\t1\t1\t1\tAngus Young, Malcolm Young, Brian Johnson\t343719\t11170334\t0.99\n2\tBalls to the Wall\t2\t2\t1\tNone\t342562\t5510424\t0.99\n3\tFast As a Shark\t3\t2\t1\tF. Baltes, S. Kaufman, U. Dirkscneider & W. Hoffman\t230619\t3990994\t0.99\n*/"
         },
         {
             "schema_name": "public",
@@ -22,8 +22,8 @@
         },
         {
             "schema_name": "public",
-            "table_name": "invoice_line",
-            "structure": "\nCREATE TABLE public.invoice_line (\n\tinvoice_line_id SERIAL NOT NULL, \n\tinvoice_id INTEGER NOT NULL, \n\ttrack_id INTEGER NOT NULL, \n\tunit_price NUMERIC(10, 2) NOT NULL, \n\tquantity INTEGER NOT NULL, \n\tCONSTRAINT ok_invoice_line PRIMARY KEY (invoice_line_id), \n\tCONSTRAINT fk_invoice_line_invoice_id FOREIGN KEY(invoice_id) REFERENCES public.invoice (invoice_id), \n\tCONSTRAINT fk_invoice_line_track_id FOREIGN KEY(track_id) REFERENCES public.track (track_id)\n)\n\n/*\n3 rows from invoice_line table:\ninvoice_line_id\tinvoice_id\ttrack_id\tunit_price\tquantity\n1\t1\t2\t0.99\t1\n2\t1\t4\t0.99\t1\n3\t2\t6\t0.99\t1\n*/"
+            "table_name": "customer",
+            "structure": "\nCREATE TABLE public.customer (\n\tcustomer_id SERIAL NOT NULL, \n\tfirst_name VARCHAR(40) NOT NULL, \n\tlast_name VARCHAR(20) NOT NULL, \n\tcompany VARCHAR(80), \n\taddress VARCHAR(70), \n\tcity VARCHAR(40), \n\tstate VARCHAR(40), \n\tcountry VARCHAR(40), \n\tpostal_code VARCHAR(10), \n\tphone VARCHAR(24), \n\tfax VARCHAR(24), \n\temail VARCHAR(60) NOT NULL, \n\tsupport_rep_id INTEGER, \n\tCONSTRAINT pk_customer PRIMARY KEY (customer_id), \n\tCONSTRAINT fk_customer_support_rep_id FOREIGN KEY(support_rep_id) REFERENCES public.employee (employee_id)\n)\n\n/*\n3 rows from customer table:\ncustomer_id\tfirst_name\tlast_name\tcompany\taddress\tcity\tstate\tcountry\tpostal_code\tphone\tfax\temail\tsupport_rep_id\n1\tLuís\tGonçalves\tEmbraer - Empresa Brasileira de Aeronáutica S.A.\tAv. Brigadeiro Faria Lima, 2170\tSão José dos Campos\tSP\tBrazil\t12227-000\t+55 (12) 3923-5555\t+55 (12) 3923-5566\tluisg@embraer.com.br\t3\n2\tLeonie\tKöhler\tNone\tTheodor-Heuss-Straße 34\tStuttgart\tNone\tGermany\t70174\t+49 0711 2842222\tNone\tleonekohler@surfeu.de\t5\n3\tFrançois\tTremblay\tNone\t1498 rue Bélanger\tMontréal\tQC\tCanada\tH2G 1A7\t+1 (514) 721-4711\tNone\tftremblay@gmail.com\t3\n*/"
         },
         {
             "schema_name": "public",
@@ -32,28 +32,28 @@
         },
         {
             "schema_name": "public",
-            "table_name": "track",
-            "structure": "\nCREATE TABLE public.track (\n\ttrack_id SERIAL NOT NULL, \n\tname VARCHAR(200) NOT NULL, \n\talbum_id INTEGER, \n\tmedia_type_id INTEGER NOT NULL, \n\tgenre_id INTEGER, \n\tcomposer VARCHAR(220), \n\tmilliseconds INTEGER NOT NULL, \n\tbytes INTEGER, \n\tunit_price NUMERIC(10, 2) NOT NULL, \n\tCONSTRAINT pk_track PRIMARY KEY (track_id), \n\tCONSTRAINT fk_track_album_id FOREIGN KEY(album_id) REFERENCES public.album (album_id), \n\tCONSTRAINT fk_track_genre_id FOREIGN KEY(genre_id) REFERENCES public.genre (genre_id), \n\tCONSTRAINT fk_track_media_type_id FOREIGN KEY(media_type_id) REFERENCES public.media_type (media_type_id)\n)\n\n/*\n3 rows from track table:\ntrack_id\tname\talbum_id\tmedia_type_id\tgenre_id\tcomposer\tmilliseconds\tbytes\tunit_price\n1\tFor Those About To Rock (We Salute You)\t1\t1\t1\tAngus Young, Malcolm Young, Brian Johnson\t343719\t11170334\t0.99\n2\tBalls to the Wall\t2\t2\t1\tNone\t342562\t5510424\t0.99\n3\tFast As a Shark\t3\t2\t1\tF. Baltes, S. Kaufman, U. Dirkscneider & W. Hoffman\t230619\t3990994\t0.99\n*/"
-        },
-        {
-            "schema_name": "public",
-            "table_name": "customer",
-            "structure": "\nCREATE TABLE public.customer (\n\tcustomer_id SERIAL NOT NULL, \n\tfirst_name VARCHAR(40) NOT NULL, \n\tlast_name VARCHAR(20) NOT NULL, \n\tcompany VARCHAR(80), \n\taddress VARCHAR(70), \n\tcity VARCHAR(40), \n\tstate VARCHAR(40), \n\tcountry VARCHAR(40), \n\tpostal_code VARCHAR(10), \n\tphone VARCHAR(24), \n\tfax VARCHAR(24), \n\temail VARCHAR(60) NOT NULL, \n\tsupport_rep_id INTEGER, \n\tCONSTRAINT pk_customer PRIMARY KEY (customer_id), \n\tCONSTRAINT fk_customer_support_rep_id FOREIGN KEY(support_rep_id) REFERENCES public.employee (employee_id)\n)\n\n/*\n3 rows from customer table:\ncustomer_id\tfirst_name\tlast_name\tcompany\taddress\tcity\tstate\tcountry\tpostal_code\tphone\tfax\temail\tsupport_rep_id\n1\tLuís\tGonçalves\tEmbraer - Empresa Brasileira de Aeronáutica S.A.\tAv. Brigadeiro Faria Lima, 2170\tSão José dos Campos\tSP\tBrazil\t12227-000\t+55 (12) 3923-5555\t+55 (12) 3923-5566\tluisg@embraer.com.br\t3\n2\tLeonie\tKöhler\tNone\tTheodor-Heuss-Straße 34\tStuttgart\tNone\tGermany\t70174\t+49 0711 2842222\tNone\tleonekohler@surfeu.de\t5\n3\tFrançois\tTremblay\tNone\t1498 rue Bélanger\tMontréal\tQC\tCanada\tH2G 1A7\t+1 (514) 721-4711\tNone\tftremblay@gmail.com\t3\n*/"
-        },
-        {
-            "schema_name": "public",
             "table_name": "album",
             "structure": "\nCREATE TABLE public.album (\n\talbum_id SERIAL NOT NULL, \n\ttitle VARCHAR(160) NOT NULL, \n\tartist_id INTEGER NOT NULL, \n\tCONSTRAINT pk_album PRIMARY KEY (album_id), \n\tCONSTRAINT fk_album_artist_id FOREIGN KEY(artist_id) REFERENCES public.artist (artist_id)\n)\n\n/*\n3 rows from album table:\nalbum_id\ttitle\tartist_id\n1\tFor Those About To Rock We Salute You\t1\n2\tBalls to the Wall\t2\n3\tRestless and Wild\t2\n*/"
         },
         {
             "schema_name": "public",
-            "table_name": "employee",
-            "structure": "\nCREATE TABLE public.employee (\n\temployee_id SERIAL NOT NULL, \n\tlast_name VARCHAR(20) NOT NULL, \n\tfirst_name VARCHAR(20) NOT NULL, \n\ttitle VARCHAR(30), \n\treports_to INTEGER, \n\tbirth_date TIMESTAMP WITHOUT TIME ZONE, \n\thire_date TIMESTAMP WITHOUT TIME ZONE, \n\taddress VARCHAR(70), \n\tcity VARCHAR(40), \n\tstate VARCHAR(40), \n\tcountry VARCHAR(40), \n\tpostal_code VARCHAR(10), \n\tphone VARCHAR(24), \n\tfax VARCHAR(24), \n\temail VARCHAR(60), \n\tCONSTRAINT pk_employee PRIMARY KEY (employee_id), \n\tCONSTRAINT fk_employee_reports_to FOREIGN KEY(reports_to) REFERENCES public.employee (employee_id)\n)\n\n/*\n3 rows from employee table:\nemployee_id\tlast_name\tfirst_name\ttitle\treports_to\tbirth_date\thire_date\taddress\tcity\tstate\tcountry\tpostal_code\tphone\tfax\temail\n1\tAdams\tAndrew\tGeneral Manager\tNone\t1962-02-18 00:00:00\t2002-08-14 00:00:00\t11120 Jasper Ave NW\tEdmonton\tAB\tCanada\tT5K 2N1\t+1 (780) 428-9482\t+1 (780) 428-3457\tandrew@chinookcorp.com\n2\tEdwards\tNancy\tSales Manager\t1\t1958-12-08 00:00:00\t2002-05-01 00:00:00\t825 8 Ave SW\tCalgary\tAB\tCanada\tT2P 2T3\t+1 (403) 262-3443\t+1 (403) 262-3322\tnancy@chinookcorp.com\n3\tPeacock\tJane\tSales Support Agent\t2\t1973-08-29 00:00:00\t2002-04-01 00:00:00\t1111 6 Ave SW\tCalgary\tAB\tCanada\tT2P 5M5\t+1 (403) 262-3443\t+1 (403) 262-6712\tjane@chinookcorp.com\n*/"
+            "table_name": "media_type",
+            "structure": "\nCREATE TABLE public.media_type (\n\tmedia_type_id SERIAL NOT NULL, \n\tname VARCHAR(120), \n\tCONSTRAINT pk_media_type PRIMARY KEY (media_type_id)\n)\n\n/*\n3 rows from media_type table:\nmedia_type_id\tname\n1\tMPEG audio file\n2\tProtected AAC audio file\n3\tProtected MPEG-4 video file\n*/"
+        },
+        {
+            "schema_name": "public",
+            "table_name": "invoice_line",
+            "structure": "\nCREATE TABLE public.invoice_line (\n\tinvoice_line_id SERIAL NOT NULL, \n\tinvoice_id INTEGER NOT NULL, \n\ttrack_id INTEGER NOT NULL, \n\tunit_price NUMERIC(10, 2) NOT NULL, \n\tquantity INTEGER NOT NULL, \n\tCONSTRAINT ok_invoice_line PRIMARY KEY (invoice_line_id), \n\tCONSTRAINT fk_invoice_line_invoice_id FOREIGN KEY(invoice_id) REFERENCES public.invoice (invoice_id), \n\tCONSTRAINT fk_invoice_line_track_id FOREIGN KEY(track_id) REFERENCES public.track (track_id)\n)\n\n/*\n3 rows from invoice_line table:\ninvoice_line_id\tinvoice_id\ttrack_id\tunit_price\tquantity\n1\t1\t2\t0.99\t1\n2\t1\t4\t0.99\t1\n3\t2\t6\t0.99\t1\n*/"
         },
         {
             "schema_name": "public",
             "table_name": "genre",
             "structure": "\nCREATE TABLE public.genre (\n\tgenre_id SERIAL NOT NULL, \n\tname VARCHAR(120), \n\tCONSTRAINT pk_genre PRIMARY KEY (genre_id)\n)\n\n/*\n3 rows from genre table:\ngenre_id\tname\n1\tRock\n2\tJazz\n3\tMetal\n*/"
+        },
+        {
+            "schema_name": "public",
+            "table_name": "employee",
+            "structure": "\nCREATE TABLE public.employee (\n\temployee_id SERIAL NOT NULL, \n\tlast_name VARCHAR(20) NOT NULL, \n\tfirst_name VARCHAR(20) NOT NULL, \n\ttitle VARCHAR(30), \n\treports_to INTEGER, \n\tbirth_date TIMESTAMP WITHOUT TIME ZONE, \n\thire_date TIMESTAMP WITHOUT TIME ZONE, \n\taddress VARCHAR(70), \n\tcity VARCHAR(40), \n\tstate VARCHAR(40), \n\tcountry VARCHAR(40), \n\tpostal_code VARCHAR(10), \n\tphone VARCHAR(24), \n\tfax VARCHAR(24), \n\temail VARCHAR(60), \n\tCONSTRAINT pk_employee PRIMARY KEY (employee_id), \n\tCONSTRAINT fk_employee_reports_to FOREIGN KEY(reports_to) REFERENCES public.employee (employee_id)\n)\n\n/*\n3 rows from employee table:\nemployee_id\tlast_name\tfirst_name\ttitle\treports_to\tbirth_date\thire_date\taddress\tcity\tstate\tcountry\tpostal_code\tphone\tfax\temail\n1\tAdams\tAndrew\tGeneral Manager\tNone\t1962-02-18 00:00:00\t2002-08-14 00:00:00\t11120 Jasper Ave NW\tEdmonton\tAB\tCanada\tT5K 2N1\t+1 (780) 428-9482\t+1 (780) 428-3457\tandrew@chinookcorp.com\n2\tEdwards\tNancy\tSales Manager\t1\t1958-12-08 00:00:00\t2002-05-01 00:00:00\t825 8 Ave SW\tCalgary\tAB\tCanada\tT2P 2T3\t+1 (403) 262-3443\t+1 (403) 262-3322\tnancy@chinookcorp.com\n3\tPeacock\tJane\tSales Support Agent\t2\t1973-08-29 00:00:00\t2002-04-01 00:00:00\t1111 6 Ave SW\tCalgary\tAB\tCanada\tT2P 5M5\t+1 (403) 262-3443\t+1 (403) 262-6712\tjane@chinookcorp.com\n*/"
         }
     ]
 }

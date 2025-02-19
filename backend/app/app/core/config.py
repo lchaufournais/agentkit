@@ -176,7 +176,7 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
-    PDF_TOOL_EXTRACTION_CONFIG_PATH: str
+    PDF_TOOL_EXTRACTION_CONFIG_PATH: str = "app/config/extraction.yml"
     AGENT_CONFIG_PATH: str
 
     ################################
